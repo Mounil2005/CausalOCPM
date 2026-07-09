@@ -92,7 +92,7 @@ Through the `validate.py` automated testing module, the framework consistently v
 
 Clone the repository and install dependencies:
 ```bash
-git clone https://github.com/Aditya0105singh/CAUSALOCPM.git
+git clone https://github.com/Mounil2005/CausalOCPM.git
 cd CAUSALOCPM
 pip install -r causal_ocpm/requirements.txt
 ```
