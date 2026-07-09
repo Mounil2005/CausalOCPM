@@ -1,0 +1,615 @@
+/* ── CausalOCPM · Professional Enterprise Theme ─────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+html, body, [class*="css"] {
+    font-family: 'Inter', -apple-system, sans-serif !important;
+    color: #1E293B !important;
+    background-color: #F8FAFC !important;
+}
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Inter', -apple-system, sans-serif !important;
+    color: #0F172A !important;
+}
+code, pre, .stCode {
+    font-family: 'JetBrains Mono', monospace !important;
+}
+/* Inline markdown `code` spans default to Streamlit's dark-theme code chip
+   (near-black background) which looks like a stray terminal box dropped
+   onto the white theme. Restyle as a light, subtle inline chip. */
+[data-testid="stMarkdownContainer"] code {
+    background: #F1F5F9 !important;
+    color: #BE185D !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 4px !important;
+    padding: 0.15em 0.4em !important;
+}
+.stApp {
+    background-color: #F8FAFC !important;
+}
+.main .block-container {
+    padding-top: 1.5rem !important;
+    max-width: 1440px;
+}
+
+/* ── HIDE CHROME ─────────────────────────────────────────────────────────── */\r\n#MainMenu, footer, .stDeployButton { \r\n    display: none !important; \r\n}
+
+/* ── SCROLLBAR ───────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+
+/* ── SIDEBAR ─────────────────────────────────────────────────────────────── */
+[data-testid="stSidebar"] {
+    background: #E8ECF1 !important;
+    border-right: 2px solid #CBD5E1 !important;
+}
+[data-testid="stSidebar"] hr {
+    border-color: #F1F5F9 !important;
+}
+
+/* ── TAB BAR ─────────────────────────────────────────────────────────────── */
+/* NOTE: Streamlit nests the tab-list, tab-border AND every tab-panel inside
+   the same first child div of [data-testid="stTabs"]. Targeting that wrapper
+   directly (as `> div:first-child`) leaks `white-space: nowrap` and
+   `overflow-x: auto` into every tab's content, clipping/cutting off text in
+   cards and tables instead of wrapping it. Target [data-baseweb="tab-list"]
+   directly so only the actual tab bar gets these rules. */
+/* Segmented "pill" control: a rounded, lightly-bordered track that holds
+   evenly-spaced pill buttons, with the active tab as a solid filled pill. */
+[data-testid="stTabs"] [data-baseweb="tab-list"] {
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    white-space: nowrap !important;
+    background: #F1F2F6 !important;
+    border: 1px solid #E7E9F0 !important;
+    border-radius: 14px !important;
+    padding: 6px !important;
+    gap: 4px !important;
+    box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.03) !important;
+}
+/* A hidden scrollbar with no visible cue is what made narrower windows look
+   like the last 2-3 tabs ("Case Attribution", "Domain Comparison") had
+   vanished — Chromium drew its own dark overflow-fade hint at the cut edge
+   instead, which looked broken. Show a slim, theme-colored scrollbar so it's
+   obvious (and usable) that the tab bar scrolls. */
+[data-testid="stTabs"] [data-baseweb="tab-list"] {
+    scrollbar-width: thin !important;
+    scrollbar-color: #CBD5E1 transparent !important;
+}
+[data-testid="stTabs"] [data-baseweb="tab-list"]::-webkit-scrollbar { height: 4px; display: block; }
+[data-testid="stTabs"] [data-baseweb="tab-list"]::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 2px; }
+/* BaseWeb draws a separate full-width underline beneath the tab-list; the
+   pill track above already has its own border, so this stray extra line
+   under it was just visual noise. */
+[data-testid="stTabs"] [data-baseweb="tab-border"] { display: none !important; }
+
+[data-testid="stTabs"] [data-baseweb="tab"] {
+    background: transparent !important;
+    color: #64748B !important;
+    border: none !important;
+    border-radius: 9px !important;
+    padding: 10px 18px !important;
+    margin: 0 !important;
+    font-size: 13.5px !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.01em !important;
+    flex-shrink: 0 !important;
+    transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease !important;
+}
+/* Hover and active-state colors are per-tab (each tab has its own identity
+   color, not one shared green) and defined once, in tab_overview.py's tab
+   bar accent block, alongside the underline colors they must match — see
+   the comment there for why this single-source-of-truth setup replaced the
+   green-only rules that used to live here and in dashboard.py. */
+[data-testid="stTabPanel"] {
+    padding-top: 22px !important;
+    animation: fadeSlideUp 0.3s ease-out forwards !important;
+}
+
+/* ── METRICS & CARDS ─────────────────────────────────────────────────────── */
+[data-testid="stMetric"], .mcard, .content-card, .insight-box {
+    background: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 8px !important;
+    padding: 16px 20px !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease !important;
+}
+[data-testid="stMetric"]:hover, .mcard:hover, .content-card:hover, .insight-box:hover {
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05) !important;
+    border-color: #CBD5E1 !important;
+}
+
+/* Specific left borders for visual hierarchy */
+[data-testid="stMetric"] { border-left: 3px solid #10B981 !important; }
+.insight-box { border-left: 3px solid #10B981 !important; border-radius: 0 8px 8px 0 !important; }
+
+/* Metric Text */
+[data-testid="stMetricLabel"], .mcard-label, .sb-label, .policy-label {
+    color: #64748B !important;
+    font-size: 12px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    font-weight: 600 !important;
+    margin-bottom: 8px !important;
+}
+
+.policy-card {
+    border-radius: 8px !important;
+    padding: 16px 20px !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+    height: 100% !important;
+    display: flex;
+    flex-direction: column;
+}
+/* Streamlit's native metric value/label wrapper hard-codes
+   overflow:hidden + text-overflow:ellipsis + a measured pixel width sized
+   for its *default* (smaller) font. Our larger forced font-size above
+   doesn't fit that width, so values like "1.228 days" were rendering as
+   "1...." — let them wrap onto a second line instead of truncating. */
+[data-testid="stMetricValue"] > div {
+    overflow: visible !important;
+    text-overflow: clip !important;
+    white-space: normal !important;
+    width: auto !important;
+}
+[data-testid="stMetricLabel"] > div {
+    overflow: visible !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    width: auto !important;
+}
+/* st.metric's neutral (delta_color="off") arrow is colored inline by
+   Streamlit as rgba(226,232,240,0.6) — the dark theme's textColor, nearly
+   invisible on our white background. Force a readable muted gray. */
+[data-testid="stMetricDelta"] {
+    color: #64748B !important;
+}
+[data-testid="stMetricValue"], .mcard-value, .policy-value {
+    color: #0F172A !important;
+    font-size: 24px !important;
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
+}
+.mcard-unit, .mcard-sub, .policy-sub { color: #64748B !important; font-size: 12px !important; margin-top: 4px !important; }
+.insight-title { font-size: 12px !important; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px !important; color: #10B981 !important; }
+.insight-body { color: #334155 !important; font-size: 14px !important; line-height: 1.5 !important; margin: 0 !important; }
+
+/* ── BUTTONS ─────────────────────────────────────────────────────────────── */
+/* Primary Buttons (e.g., Ask, Save) */
+.stButton > button[kind="primary"], .stButton > button[data-testid="baseButton-primary"],
+.stFormSubmitButton > button[kind="primary"], .stFormSubmitButton > button[data-testid="baseButton-primary"] {
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%) !important;
+    color: #FFFFFF !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    padding: 10px 20px !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    white-space: normal !important;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25) !important;
+    min-height: 44px !important;
+    line-height: 1.3 !important;
+}
+.stButton > button[kind="primary"]:hover, .stButton > button[data-testid="baseButton-primary"]:hover,
+.stFormSubmitButton > button[kind="primary"]:hover, .stFormSubmitButton > button[data-testid="baseButton-primary"]:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* Secondary Buttons (e.g., Quick Actions, Clear) - Styled as Chips */
+.stButton > button[kind="secondary"], .stButton > button[data-testid="baseButton-secondary"],
+.stFormSubmitButton > button[kind="secondary"], .stFormSubmitButton > button[data-testid="baseButton-secondary"],
+.stButton > button {
+    background: #FFFFFF !important;
+    color: #475569 !important;
+    border: 1px solid #CBD5E1 !important;
+    border-radius: 8px !important;
+    font-weight: 500 !important;
+    padding: 10px 16px !important;
+    transition: all 0.2s ease !important;
+    white-space: normal !important;
+    min-height: 44px !important;
+    height: 100% !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
+    line-height: 1.3 !important;
+}
+.stButton > button[kind="secondary"]:hover, .stButton > button[data-testid="baseButton-secondary"]:hover,
+.stFormSubmitButton > button[kind="secondary"]:hover, .stFormSubmitButton > button[data-testid="baseButton-secondary"]:hover,
+.stButton > button:hover {
+    background: #F8FAFC !important;
+    color: #10B981 !important;
+    border-color: #10B981 !important;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* Ensure icons inside buttons are spaced and vertically aligned properly */
+.stButton > button p, .stFormSubmitButton > button p {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    margin: 0 !important;
+}
+
+/* ── INPUTS ──────────────────────────────────────────────────────────────── */
+[data-testid="stSelectbox"] > div > div, 
+[data-testid="stNumberInput"] input,
+[data-baseweb="select"] > div:first-child {
+    background: #FFFFFF !important;
+    border: 1px solid #CBD5E1 !important;
+    border-radius: 6px !important;
+    color: #0F172A !important;
+}
+[data-testid="stSelectbox"] > div > div:focus-within,
+[data-testid="stNumberInput"] input:focus {
+    border-color: #10B981 !important;
+    box-shadow: 0 0 0 1px #10B981 !important;
+}
+
+/* Number input +/- steppers default to the dark base theme's button styling
+   (config.toml is base="dark" so native widgets stay dark unless overridden) —
+   override so they match the light card/border palette instead of rendering
+   as black squares on the white theme. */
+[data-testid="stNumberInputContainer"] {
+    background: #FFFFFF !important;
+    border-left: 1px solid #CBD5E1 !important;
+}
+[data-testid="stNumberInputStepDown"],
+[data-testid="stNumberInputStepUp"] {
+    background: #F8FAFC !important;
+    color: #475569 !important;
+    border-color: #CBD5E1 !important;
+}
+[data-testid="stNumberInputStepDown"]:hover,
+[data-testid="stNumberInputStepUp"]:hover {
+    background: #EFF6FF !important;
+    color: #10B981 !important;
+}
+[data-testid="stNumberInputStepDown"] svg,
+[data-testid="stNumberInputStepUp"] svg {
+    fill: currentColor !important;
+}
+
+/* Native st.info/warning/success/error banners: Streamlit colors their text
+   for a dark background (e.g. warning text rgb(255,255,194) — pale yellow)
+   while the tinted background (e.g. rgba(255,227,18,0.2)) blends with our
+   white page into an equally pale yellow — text and background nearly
+   identical, unreadable. Force dark, readable text per alert kind. */
+[data-testid="stAlertContainer"] { color: #1E293B !important; }
+[data-testid="stAlertContentWarning"], [data-testid="stAlertContentWarning"] * {
+    color: #92400E !important;
+}
+[data-testid="stAlertContentError"], [data-testid="stAlertContentError"] * {
+    color: #991B1B !important;
+}
+[data-testid="stAlertContentSuccess"], [data-testid="stAlertContentSuccess"] * {
+    color: #065F46 !important;
+}
+[data-testid="stAlertContentInfo"], [data-testid="stAlertContentInfo"] * {
+    color: #1E40AF !important;
+}
+ul[data-baseweb="menu"], [data-baseweb="list"], div[role="listbox"], [data-testid="stVirtualDropdown"] {
+    background: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1) !important;
+}
+li[role="option"] { background-color: #FFFFFF !important; color: #334155 !important; }
+li[role="option"]:hover { background: #F1F5F9 !important; color: #0F172A !important; }
+li[role="option"][aria-selected="true"] { background: #EFF6FF !important; color: #059669 !important; }
+
+/* ── EXPANDERS ───────────────────────────────────────────────────────────── */
+[data-testid="stExpander"] {
+    background: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.02) !important;
+}
+[data-testid="stExpander"] summary {
+    color: #334155 !important;
+    font-weight: 500 !important;
+}
+/* Only the expander header was given a color above — its body content
+   (e.g. the sidebar "Framework Overview" text) fell back to the dark
+   theme's pale textColor, rendering near-invisible on the white card. */
+[data-testid="stExpanderDetails"], [data-testid="stExpanderDetails"] * {
+    color: #334155 !important;
+}
+
+/* ── DATAFRAMES & TABLES ─────────────────────────────────────────────────── */
+[data-testid="stDataFrame"] { border: 1px solid #E2E8F0 !important; border-radius: 6px !important; }
+.ctbl { width: 100%; border-collapse: collapse; font-size: 13px; margin: 8px 0; background: #FFFFFF; }
+.ctbl th {
+    background: #F8FAFC; color: #475569; padding: 10px 12px; text-align: left;
+    font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+    border-bottom: 2px solid #E2E8F0;
+}
+.ctbl td { padding: 10px 12px; border-bottom: 1px solid #F1F5F9; color: #334155; }
+.ctbl tr:hover td { background: #F8FAFC; }
+
+/* ── HERO SECTION ────────────────────────────────────────────────────────── */
+.hero-section {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    padding: 32px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.hero-title, .hero-title-hc {
+    font-size: 28px;
+    font-weight: 700;
+    color: #0F172A;
+    margin: 0 0 8px 0;
+    letter-spacing: -0.02em;
+}
+.hero-sub { color: #475569; font-size: 16px; margin: 0 0 16px; line-height: 1.5; }
+.hero-tag { color: #64748B; font-size: 13px; margin: 0; }
+
+/* ── SECTION HEADER ──────────────────────────────────────────────────────── */
+.shdr {
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid #E2E8F0; padding-bottom: 12px; margin: 32px 0 16px;
+    flex-wrap: wrap; gap: 12px;
+}
+.shdr-left { display: flex; align-items: center; gap: 12px; }
+.shdr-icon { display: none !important; /* Hide emojis globally */ }
+.shdr-text h3 { color: #0F172A; font-size: 18px; font-weight: 600; margin: 0; }
+.shdr-text .ssub { color: #64748B; font-size: 13px; margin: 4px 0 0; }
+.shdr-tag {
+    background: #F1F5F9 !important; color: #475569 !important;
+    padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.05em; border: 1px solid #E2E8F0;
+}
+
+/* ── BADGES ──────────────────────────────────────────────────────────────── */
+.badge {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    font-size: 12px; font-weight: 500; font-family: 'JetBrains Mono', monospace;
+}
+.b-ok     { background: #ECFDF5; color: #059669; border: 1px solid #A7F3D0; }
+.b-warn   { background: #FFFBEB; color: #D97706; border: 1px solid #FDE68A; }
+.b-err    { background: #FEF2F2; color: #DC2626; border: 1px solid #FECACA; }
+.b-neu    { background: #F1F5F9; color: #475569; border: 1px solid #E2E8F0; }
+.b-blue   { background: #EFF6FF; color: #10B981; border: 1px solid #BFDBFE; }
+.b-purple { background: #F5F3FF; color: #7C3AED; border: 1px solid #DDD6FE; }
+.b-amber  { background: #FFFBEB; color: #D97706; border: 1px solid #FDE68A; }
+.b-violet { background: #EFF6FF; color: #10B981; border: 1px solid #BFDBFE; }
+
+.status-badge-mfg, .status-badge-hc {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #F1F5F9; border: 1px solid #E2E8F0; color: #475569;
+    border-radius: 4px; padding: 4px 10px; font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.05em;
+    animation: none !important;
+}
+
+/* ── OVERFLOW PREVENTION ─────────────────────────────────────────────────── */
+.main .block-container { overflow-x: hidden !important; }
+[data-testid="column"] { min-width: 0 !important; overflow-wrap: break-word !important; }
+[data-testid="stHorizontalBlock"] { flex-wrap: wrap !important; }
+[data-testid="stMarkdownContainer"] { max-width: 100% !important; }
+[data-testid="stPlotlyChart"] { max-width: 100% !important; overflow: hidden !important; }
+
+/* ── PORTAL FIXES (Dropdowns & Tooltips) ─────────────────────────────────── */
+[data-baseweb="popover"],
+[data-baseweb="popover"] > div,
+[data-baseweb="popover"] [data-testid="stVirtualDropdown"],
+div[role="listbox"],
+ul[role="listbox"] {
+    background-color: #FFFFFF !important;
+    background: #FFFFFF !important;
+}
+
+[data-baseweb="tooltip"] p,
+[data-baseweb="tooltip"] li,
+[data-baseweb="tooltip"] span,
+[data-baseweb="tooltip"] [data-testid="stMarkdownContainer"] p,
+[data-testid="stTooltipContent"],
+[data-testid="stTooltipContent"] p,
+[data-testid="stTooltipContent"] span {
+    color: #0F172A !important;
+}
+
+/* ── SIDEBAR "VIBE CODED" ENHANCEMENTS ───────────────────────────────────── */
+
+/* 1. Sidebar background and border */
+[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #E8ECF1 0%, #DFE4EB 100%) !important;
+    border-right: 2px solid #CBD5E1 !important;
+    box-shadow: 2px 0 24px rgba(0, 0, 0, 0.04) !important;
+}
+[data-testid="stSidebar"] > div:first-child {
+    background: transparent !important;
+}
+
+/* 2. Typography for Sidebar sections */
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p {
+    color: #475569 !important;
+    font-size: 0.92rem !important;
+    line-height: 1.6 !important;
+}
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p strong {
+    color: #1E293B !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.03em !important;
+}
+
+/* 3. Number Input & Selectboxes (Fixing the grey background) */
+[data-testid="stSidebar"] [data-baseweb="input"],
+[data-testid="stSidebar"] [data-baseweb="select"] > div {
+    background-color: #FFFFFF !important;
+    background: #FFFFFF !important;
+    border: 1px solid rgba(203, 213, 225, 0.8) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02), inset 0 1px 2px rgba(255,255,255,0.8) !important;
+    transition: all 0.2s ease !important;
+}
+[data-testid="stSidebar"] [data-baseweb="input"]:focus-within,
+[data-testid="stSidebar"] [data-baseweb="select"] > div:focus-within {
+    border-color: #10B981 !important;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15) !important;
+}
+[data-testid="stSidebar"] [data-baseweb="input"] input {
+    background-color: transparent !important;
+    color: #0F172A !important;
+}
+
+/* 4. Radio Buttons — domain-selection cards (icon badge, bold title +
+   subtitle, tinted background + dot when selected). The label text is real
+   markdown ("**Title**  \nSubtitle" — a hard line-break makes a genuine
+   <br>), so only the box/icon/selected-state styling below is CSS. */
+[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] {
+    gap: 10px !important;
+}
+[data-testid="stSidebar"] [data-testid="stRadio"] label[data-baseweb="radio"] {
+    background: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 14px !important;
+    padding: 12px 16px !important;
+    margin: 0 !important;
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    position: relative !important;
+    transition: border-color 0.15s ease, background 0.15s ease !important;
+}
+[data-testid="stSidebar"] [data-testid="stRadio"] label[data-baseweb="radio"]:hover {
+    border-color: #CBD5E1 !important;
+    transform: none !important;
+}
+/* BaseWeb's own radio circle is replaced by the icon badge (::before)
+   and, when selected, a small dot (::after) — hidden rather than styled. */
+[data-testid="stSidebar"] [data-testid="stRadio"] label[data-baseweb="radio"] > div:first-child {
+    display: none !important;
+}
+[data-testid="stSidebar"] [data-testid="stRadio"] label[data-baseweb="radio"]::before {
+    flex-shrink: 0;
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.15rem;
+}
+[data-testid="stSidebar"] [data-testid="stRadio"] label[data-baseweb="radio"]:nth-of-type(1)::before { content: "🏭"; background: #D1FAE5; }
+[data-testid="stSidebar"] [data-testid="stRadio"] label[data-baseweb="radio"]:nth-of-type(2)::before { content: "🏥"; background: #EDE9FE; }
+[data-testid="stSidebar"] [data-testid="stRadio"] label[data-baseweb="radio"] [data-testid="stMarkdownContainer"] p {
+    margin: 0 !important;
+    font-size: 0.72rem !important;
+    font-weight: 600 !important;
+    color: #64748B !important;
+}
+[data-testid="stSidebar"] [data-testid="stRadio"] label[data-baseweb="radio"] [data-testid="stMarkdownContainer"] p strong {
+    display: block;
+    font-size: 0.92rem !important;
+    font-weight: 800 !important;
+    color: #0F172A !important;
+    margin-bottom: 1px;
+}
+/* :has() here is scoped to a single label's OWN descendant input — not a
+   shared ancestor several levels up — so this doesn't have the cascading-
+   match problem a page-wide :has() hit earlier in the Copilot tab work. */
+[data-testid="stSidebar"] [data-testid="stRadio"] label[data-baseweb="radio"]:has(input:checked) {
+    background: #ECFDF5 !important;
+    border-color: #A7F3D0 !important;
+}
+[data-testid="stSidebar"] [data-testid="stRadio"] label[data-baseweb="radio"]:has(input:checked)::after {
+    content: "";
+    position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #10B981;
+}
+
+/* 5. Primary CTA Button (Regenerate Pipeline) */
+[data-testid="stSidebar"] .stButton > button {
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%) !important;
+    border: none !important;
+    color: #022C22 !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.02em !important;
+    padding: 10px 16px !important;
+    border-radius: 10px !important;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+[data-testid="stSidebar"] .stButton > button:hover {
+    background: linear-gradient(135deg, #059669 0%, #064E3B 100%) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35) !important;
+}
+[data-testid="stSidebar"] .stButton > button:active {
+    transform: translateY(0) !important;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3) !important;
+}
+
+/* 6. Subtle Dividers */
+[data-testid="stSidebar"] hr {
+    border-top: 1px solid rgba(226, 232, 240, 0.8) !important;
+    margin: 1.5rem 0 !important;
+}
+
+/* 7. Bulletproof fix for black stuck Number Inputs */
+[data-testid="stNumberInput"] [data-baseweb="input"],
+[data-testid="stNumberInput"] [data-baseweb="input"] > div,
+[data-testid="stNumberInput"] input {
+    background-color: #FFFFFF !important;
+    color: #1E293B !important;
+    -webkit-text-fill-color: #1E293B !important;
+}
+[data-testid="stNumberInput"] {
+    background-color: #FFFFFF !important;
+    border-radius: 8px !important;
+}
+
+/* 8. CONTENT SPACING */
+.hero-section {
+    padding: 0.5rem 1.5rem !important;
+    margin-bottom: 0.5rem !important;
+}
+.hero-title {
+    font-size: 1.4rem !important;
+    margin: 0 !important;
+}
+.hero-sub {
+    font-size: 0.9rem !important;
+    margin: 0 !important;
+}
+.hero-tag {
+    font-size: 0.75rem !important;
+    margin: 0 !important;
+}
+
+/* ── MOBILE TWEAKS ───────────────────────────────── */
+@media (max-width: 768px) {
+    /* Sidebar takes full width on phone when open */
+    [data-testid="stSidebar"] {
+        width: 85vw !important;
+        min-width: unset !important;
+        max-width: 320px !important;
+    }
+
+    /* Prevent horizontal scroll caused by wide embedded canvases */
+    [data-testid="stIFrame"],
+    iframe {
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+
+    /* Stack columns vertically on small screens */
+    [data-testid="stHorizontalBlock"] {
+        flex-direction: column !important;
+    }
+    [data-testid="column"] {
+        width: 100% !important;
+        flex: 1 1 100% !important;
+        min-width: unset !important;
+    }
+}
