@@ -3,7 +3,7 @@
 
 ![Status](https://img.shields.io/badge/Status-Fully%20Functional-success?style=for-the-badge) ![Python](https://img.shields.io/badge/Python-3.8%2B-blue?style=for-the-badge) ![Streamlit](https://img.shields.io/badge/Streamlit-Dashboard-FF4B4B?style=for-the-badge&logo=streamlit)
 
-**🌐 Live Dashboard:** [https://causalocpm-etpavgjhzcyfdhufeftyrz.streamlit.app/](https://causalocpm-etpavgjhzcyfdhufeftyrz.streamlit.app/)
+**🌐 Live Dashboard:** [https://mounil-causalocpm.streamlit.app/](https://mounil-causalocpm.streamlit.app/)
 
 CausalOCPM is an end-to-end analytical framework that bridges **Object-Centric Process Mining (OCPM)** and **Structural Causal Models (SCM)**. It enables rigorous, counterfactual policy evaluation in complex, multi-entity business processes.
 
