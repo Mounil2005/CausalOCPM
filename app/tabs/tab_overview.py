@@ -1,17 +1,56 @@
-# ── AI EXECUTIVE SUMMARY (PHASE 0) ──────────────────────────────────────────
-st.markdown(f"""
-<div style="background: linear-gradient(to right, #F8FAFC, #FFFFFF); border: 1px solid #E2E8F0; border-left: 4px solid #10B981; border-radius: 12px; padding: 24px 32px; margin-bottom: 28px; box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
-    <div style="font-size: 0.85rem; font-weight: 800; color: #10B981; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-        <span style="font-size: 1.2rem;">✨</span> AI Executive Summary
-    </div>
-    <ul style="color: #334155; font-size: 1rem; line-height: 1.7; margin: 0; padding-left: 20px;">
-        <li>Causal Discovery and Double ML jointly validate that this is a genuine causal relationship, not mere correlation.</li>
-        <li>The quantified headline finding and business impact are shown immediately below.</li>
-    </ul>
-</div>
-""", unsafe_allow_html=True)
+# ── SHARED "AI ___ SUMMARY" CARD COMPONENT ─────────────────────────────────
+# Defined here because tab_overview.py is exec'd first (see dashboard.py's
+# tab loop) — Data & Discovery and Model & Impact reuse this same function
+# by name via the shared globals() dict all tabs execute into, rather than
+# each hand-rolling their own version of the same card, the way the old
+# "AI Executive/Discovery Summary" boxes independently did (three different
+# layouts for what was conceptually one component).
+def _ai_status(frac):
+    if frac >= 0.85: return SUCCESS, "High"
+    if frac >= 0.65: return WARNING, "Moderate"
+    return ERROR, "Low"
 
-# ── BOARDROOM HERO CARD ───────────────────────────────────────────────────
+def _ai_card(accent, badge_bg, icon, title, conf_color, conf_label, lead, bullets):
+    _bullets_html = "".join(f'<li style="margin-bottom:5px;">{b}</li>' for b in bullets)
+    return (
+        f'<div style="background:linear-gradient(135deg,{badge_bg},#FFFFFF);border:1px solid {BORDER};'
+        f'border-left:4px solid {accent};border-radius:14px;padding:24px 28px;margin-bottom:28px;'
+        f'box-shadow:0 4px 12px rgba(0,0,0,0.03);">'
+        f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px;">'
+        f'<div style="display:flex;align-items:center;gap:10px;">'
+        f'<span style="width:30px;height:30px;border-radius:9px;background:{accent}22;display:flex;'
+        f'align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;">{icon}</span>'
+        f'<span style="font-size:0.85rem;font-weight:800;color:{accent};text-transform:uppercase;'
+        f'letter-spacing:0.08em;">{title}</span>'
+        f'</div>'
+        f'<span style="font-size:0.68rem;font-weight:800;color:#FFFFFF;background:{conf_color};'
+        f'padding:4px 11px;border-radius:20px;text-transform:uppercase;letter-spacing:0.03em;">'
+        f'{conf_label} Confidence</span>'
+        f'</div>'
+        f'<div style="font-size:1.15rem;font-weight:800;color:#0F172A;line-height:1.45;margin-bottom:14px;">'
+        f'{lead}</div>'
+        f'<ul style="color:#334155;font-size:0.92rem;line-height:1.6;margin:0;padding-left:20px;">'
+        f'{_bullets_html}</ul>'
+        f'</div>'
+    )
+
+# ── MODEL VALIDATION NUMBERS (computed early — the AI card needs them too) ──
+# Sourced from ablation["without_domain_knowledge"] — the raw PC-algorithm
+# discovery — NOT `dag_metrics`. `dag_metrics` is computed after
+# enforce_domain_knowledge() force-adds every planted ground-truth edge
+# into the graph, which makes recall = 1.00 guaranteed by construction
+# rather than something actually discovered; showing that number as a
+# trust signal would be circular (see phase2_discovery.py).
+_ov_wodk = ablation.get("without_domain_knowledge", {}) if ablation else {}
+_ov_prec = _ov_wodk.get("precision", dag_metrics.get("precision", 0.0))
+_ov_rec  = _ov_wodk.get("recall",    dag_metrics.get("recall",    0.0))
+_ov_f1   = _ov_wodk.get("f1_score",  dag_metrics.get("f1_score",  0.0))
+_ov_tp     = _ov_wodk.get("true_positives",  0)
+_ov_fp     = _ov_wodk.get("false_positives", 0)
+_ov_fn     = _ov_wodk.get("false_negatives", 0)
+_ov_boot_n = dag.graph.get("bootstrap_n", 20)
+
+# ── BOARDROOM HERO CARD (data) ─────────────────────────────────────────────
 _hero_treatment = cfg.get("treatment_var", "treatment")
 _hero_outcome   = cfg.get("outcome_label", cfg.get("outcome_var", "outcome"))
 # The "Recovered Causal Effect" card must show what the pipeline actually
@@ -42,6 +81,30 @@ _hero_act_short   = "Shift 25% to Supplier B" if domain == "manufacturing" else 
 # text — string-splitting on " dependency"/" over-allocation" would silently
 # break if that display copy ever changed.
 _primary_driver   = "Supplier A" if domain == "manufacturing" else "Specialist Allocation"
+
+# ── AI EXECUTIVE SUMMARY — now genuinely derived from this run's numbers
+# (recovered causal effect, discovery precision/recall, recommended action)
+# instead of a fixed string that read the same regardless of the data.
+_ov_avg_conf = (_ov_prec + _ov_rec + _ov_f1) / 3
+_ov_conf_col, _ov_conf_lbl = _ai_status(_ov_avg_conf)
+st.markdown(
+    _ai_card(
+        accent=PRIMARY, badge_bg="#F0FDF4", icon="✨", title="AI Executive Summary",
+        conf_color=_ov_conf_col, conf_label=_ov_conf_lbl,
+        lead=(
+            f"<b>{_primary_driver}</b> is confirmed as the dominant causal driver of "
+            f"{_hero_label.lower()} — statistically validated, not just correlated."
+        ),
+        bullets=[
+            f"Recovered causal effect: <b>{_hero_causal} days</b> via Double ML — "
+            f"{_hero_pct} reduction potential vs. baseline",
+            f"Discovery precision <b>{_ov_prec:.2f}</b>, recall <b>{_ov_rec:.2f}</b> across "
+            f"{_ov_boot_n} bootstrap reruns (full breakdown below)",
+            f"Recommended action: <b>{_hero_action}</b> → {_hero_saving}/yr expected savings",
+        ],
+    ),
+    unsafe_allow_html=True,
+)
 
 st.markdown(
     f'<div style="background: linear-gradient(135deg, #0F172A 0%, #1E293B 60%, #134E4A 100%); '
@@ -95,6 +158,188 @@ st.markdown(
     unsafe_allow_html=True
 )
 st.markdown("<style>@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}</style>", unsafe_allow_html=True)
+
+# ── MODEL VALIDATION STRIP ────────────────────────────────────────────────
+# Answers "why should I trust this?" right under the headline claim —
+# discovered-graph-vs-planted-ground-truth precision/recall/F1, plus
+# bootstrap edge stability. Same numbers as the full breakdown in
+# Data & Discovery → Step 5, surfaced here so a reader never has to scroll
+# to find out whether the model is any good.
+#
+# (numbers already computed above, near the AI Executive Summary card,
+# since that card needs them too)
+
+def _ov_status(frac):
+    if frac >= 0.85: return SUCCESS, "Strong"
+    if frac >= 0.65: return WARNING, "Moderate"
+    return ERROR, "Needs Review"
+
+# Per-metric "i" info icon — a native title attribute, not a custom tooltip
+# widget, so it needs no JS and can't trip the React-crash issue hit earlier
+# with inline onclick handlers. Each one spells out the actual formula with
+# this run's real TP/FP/FN counts, not just a generic definition, so hovering
+# any single box answers "how did THIS number happen" on its own.
+def _ov_info_icon(tooltip):
+    return (
+        f'<span title="{tooltip}" style="display:inline-flex;align-items:center;justify-content:center;'
+        f'width:15px;height:15px;border-radius:50%;background:{BORDER};color:{MUTED};'
+        f'font-size:0.62rem;font-weight:800;font-style:normal;cursor:help;flex-shrink:0;">i</span>'
+    )
+
+# NL = literal HTML numeric-entity newline, not a real "\n\n" blank line.
+# st.markdown() runs its whole argument through a markdown-to-HTML pass
+# before the browser ever sees it, even the parts inside our raw HTML
+# attributes — a literal blank line inside title="..." gets read as a
+# markdown paragraph break and Streamlit splits the tag apart around it,
+# corrupting the whole card (verified: rendered as a mangled <p>...</p>
+# spliced into the middle of the attribute, breaking is/left the "i" icon
+# not existing anywhere in the DOM). The numeric entity has no literal
+# newline in the source, so markdown leaves it alone, and the browser still
+# renders it as a real line break inside the native tooltip.
+_NL = "&#10;&#10;"
+_ov_gt_n_hint = _ov_tp + _ov_fn
+_OV_TOOLTIPS = {
+    "Bootstrap Stability": (
+        f"Think of it as asking {_ov_boot_n} independent witnesses the same question instead of "
+        f"trusting just one. The algorithm reruns causal discovery {_ov_boot_n} times, each on a "
+        f"slightly different resampled slice of the same data, and checks how often it lands on "
+        f"the same causal edges.{_NL}"
+        f"A relationship that keeps reappearing across resamples is likely a real pattern in how "
+        f"the process behaves, not a coincidence of this one dataset. One that only shows up once "
+        f"is a red flag it might just be noise.{_NL}"
+        f"Result here: {_boot_stab_pct:.0f}% agreement across {_ov_boot_n} reruns — most of what "
+        f"was found holds up under repeated testing."
+    ),
+    "Precision": (
+        f"Picture the algorithm as a detective naming suspects. Precision asks: of everyone it "
+        f"accused, how many were actually guilty?{_NL}"
+        f"It named {_ov_tp + _ov_fp} relationships as causal. {_ov_tp} matched the real planted "
+        f"structure; {_ov_fp} were false accusations — links it claimed exist but don't.{_NL}"
+        f"{_ov_tp} correct ÷ {_ov_tp + _ov_fp} accused = {_ov_prec:.2f}. A high score means that "
+        f"when this model says 'A causes B,' you can trust it — it rarely cries wolf."
+    ),
+    "Edge Recall": (
+        f"This flips the question around: of all {_ov_gt_n_hint} real causal relationships "
+        f"actually planted in the data, how many did the algorithm manage to dig up on its own?{_NL}"
+        f"It correctly found {_ov_tp}, and missed {_ov_fn}. {_ov_tp} found ÷ {_ov_gt_n_hint} that "
+        f"truly exist = {_ov_rec:.2f}.{_NL}"
+        f"A high score means the model is thorough — it doesn't leave real causes undiscovered, "
+        f"even if it occasionally over-claims (that's what Precision catches separately)."
+    ),
+    "Recovery F1": (
+        f"Precision and Recall pull against each other. You could fake a perfect Precision by "
+        f"only naming the one relationship you're 100% sure about — or fake a perfect Recall by "
+        f"claiming every possible link exists and being wrong most of the time.{_NL}"
+        f"F1 is the honest referee: the harmonic mean of both, 2×(P×R)÷(P+R) = {_ov_f1:.2f}. It "
+        f"only scores high when precision AND recall are genuinely strong together — you can't "
+        f"game it by leaning on just one."
+    ),
+}
+
+def _ov_metric_tile(icon, value, label, frac):
+    _color, _status = _ov_status(frac)
+    return (
+        f'<div style="background:#FFFFFF;border:1px solid {BORDER};border-radius:12px;'
+        f'padding:14px 16px;flex:1;min-width:140px;">'
+        f'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">'
+        f'<span style="font-size:0.95rem;">{icon}</span>'
+        f'<span style="font-size:0.6rem;font-weight:800;color:{_color};background:{_color}1A;'
+        f'padding:2px 7px;border-radius:20px;text-transform:uppercase;letter-spacing:0.03em;">{_status}</span>'
+        f'</div>'
+        f'<div style="font-size:1.7rem;font-weight:900;color:{TEXT};line-height:1.1;">{value}</div>'
+        f'<div style="display:flex;align-items:center;gap:5px;margin-top:5px;margin-bottom:8px;">'
+        f'<span style="font-size:0.68rem;font-weight:700;color:{MUTED};text-transform:uppercase;'
+        f'letter-spacing:0.05em;">{label}</span>'
+        + _ov_info_icon(_OV_TOOLTIPS.get(label, ""))
+        + f'</div>'
+        f'<div style="height:4px;background:{BORDER};border-radius:2px;overflow:hidden;">'
+        f'<div style="height:100%;width:{frac*100:.0f}%;background:{_color};border-radius:2px;"></div>'
+        f'</div>'
+        f'</div>'
+    )
+
+_ov_avg = (_ov_prec + _ov_rec + _ov_f1) / 3
+_ov_verdict_col, _ov_verdict_lbl = _ov_status(_ov_avg)
+
+st.markdown(
+    f'<div style="background:{CARD};border:1px solid {BORDER};border-radius:14px;'
+    f'padding:18px 22px;margin-bottom:28px;box-shadow:0 2px 10px rgba(15,23,42,0.03);">'
+    f'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:6px;">'
+    f'<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">'
+    f'<span style="font-size:1.05rem;">🛡️</span>'
+    f'<span style="font-size:0.82rem;font-weight:800;color:{TEXT};text-transform:uppercase;letter-spacing:0.06em;">'
+    f'Model Validation — Discovered Graph vs. Ground Truth</span>'
+    f'<span style="font-size:0.66rem;font-weight:800;color:#FFFFFF;background:{_ov_verdict_col};'
+    f'padding:3px 9px;border-radius:20px;text-transform:uppercase;letter-spacing:0.03em;">'
+    f'✓ {_ov_verdict_lbl}</span>'
+    f'</div>'
+    f'<span style="font-size:0.75rem;color:{SUBTLE};">Full breakdown in '
+    f'<b>Data &amp; Discovery → Step 5</b></span>'
+    f'</div>'
+    f'<div style="font-size:0.72rem;color:{SUBTLE};margin-bottom:14px;">'
+    f'Precision/recall/F1 are the raw statistical discovery, measured before domain-knowledge '
+    f'constraints are applied — not a number domain knowledge guarantees to be perfect.</div>'
+    f'<div style="display:flex;gap:12px;flex-wrap:wrap;">'
+    + _ov_metric_tile("🔁", f"{_boot_stab_pct:.0f}%", "Bootstrap Stability", _boot_stab_pct / 100)
+    + _ov_metric_tile("🎯", f"{_ov_prec:.2f}", "Precision", _ov_prec)
+    + _ov_metric_tile("🔎", f"{_ov_rec:.2f}", "Edge Recall", _ov_rec)
+    + _ov_metric_tile("⚖️", f"{_ov_f1:.2f}", "Recovery F1", _ov_f1)
+    + f'</div>'
+    f'</div>',
+    unsafe_allow_html=True,
+)
+with st.expander("ℹ️ How is this measured?"):
+    _ov_gt_n = len(_ov_wodk.get("ground_truth_edges", [])) or dag.number_of_edges() or 9
+
+    def _ov_flow_step(n, icon, title, desc):
+        return (
+            f'<div style="flex:1;min-width:160px;background:#FFFFFF;border:1px solid {BORDER};'
+            f'border-radius:10px;padding:12px 14px;">'
+            f'<div style="display:flex;align-items:center;gap:7px;margin-bottom:5px;">'
+            f'<span style="width:18px;height:18px;border-radius:50%;background:{PRIMARY};color:#FFFFFF;'
+            f'font-size:0.62rem;font-weight:800;display:flex;align-items:center;justify-content:center;'
+            f'flex-shrink:0;">{n}</span>'
+            f'<span style="font-size:0.9rem;">{icon}</span>'
+            f'<span style="font-size:0.78rem;font-weight:800;color:{TEXT};">{title}</span>'
+            f'</div>'
+            f'<div style="font-size:0.74rem;color:{MUTED};line-height:1.45;">{desc}</div>'
+            f'</div>'
+        )
+
+    st.markdown(
+        f'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:stretch;margin-bottom:6px;">'
+        + _ov_flow_step(1, "🌱", "Plant a known answer",
+            f"Synthetic data generated from {_ov_gt_n} causal edges planted in advance.")
+        + '<div style="display:flex;align-items:center;color:#CBD5E1;font-size:1.2rem;font-weight:800;">→</div>'
+        + _ov_flow_step(2, "🔍", "Discover statistically",
+            f"PC algorithm runs {_ov_boot_n}× on resampled data, no domain rules yet.")
+        + '<div style="display:flex;align-items:center;color:#CBD5E1;font-size:1.2rem;font-weight:800;">→</div>'
+        + _ov_flow_step(3, "✅", "Compare, edge by edge",
+            f"Proposed graph checked against the {_ov_gt_n} planted edges.")
+        + f'</div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        f'<div style="background:#F8FAFC;border:1px solid {BORDER};border-radius:10px;'
+        f'padding:10px 14px;margin:12px 0;display:flex;gap:18px;flex-wrap:wrap;font-size:0.78rem;">'
+        f'<span style="color:{SUCCESS};font-weight:700;">✓ {_ov_tp} correct edges found</span>'
+        f'<span style="color:{ERROR};font-weight:700;">✗ {_ov_fp} false alarms</span>'
+        f'<span style="color:{WARNING};font-weight:700;">− {_ov_fn} missed edges</span>'
+        f'</div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        f"**Precision** = correct ÷ all proposed (of what it found, how much was right?) · "
+        f"**Recall** = correct ÷ all real (of what's true, how much did it find?) · "
+        f"**F1** = both balanced into one number.\n\n"
+        f"**Bootstrap Stability** is separate — the share of {_ov_boot_n} resampled reruns that "
+        f"agreed an edge was real, a guard against a lucky fluke. Domain-knowledge rules are "
+        f"applied only afterward, so these scores reflect the statistics working alone."
+    )
+    st.markdown(
+        f"Domain-knowledge constraints are applied only **after** this scoring, so these numbers "
+        f"are graded on the raw statistics alone. Full walkthrough in **Data & Discovery → Step 5**."
+    )
 
 # ── OCPM COMPARISON CARD ─────────────────────────────────────────────────
 _n_obj_types = 5 if domain == "manufacturing" else 4
@@ -213,8 +458,18 @@ st.markdown(
 )
 
 # Overview chart: two independent series with their own metric axes
-# Discovery series: Structural Precision, Pre-DK Recall, Post-DK Recall (all graph-recovery metrics)
+# Discovery series: Post-DK Precision, Pre-DK Recall, Post-DK Recall (all graph-recovery metrics)
 # SCM series: Sign Consistency, Avg R² (avg across linear nodes), 1-MeanRelErr (coefficient accuracy)
+#
+# The precision bar is explicitly labeled "Post-DK" (not just "Graph
+# Precision") because _ov_prec below is dag_metrics' precision, computed
+# AFTER enforce_domain_knowledge() force-adds every planted ground-truth
+# edge — the same number this file's own AI Executive Summary / Model
+# Validation cards deliberately avoid showing elsewhere because it's not a
+# number the algorithm found on its own. Sitting it unlabeled next to a bar
+# explicitly marked "Pre-DK Recall" would look like the two came from the
+# same regime when they don't; the label makes that distinction visible
+# instead of implying false consistency between the two discovery bars.
 if not coefs.empty and "r2_score" in coefs.columns and not coefs["r2_score"].isna().all():
     _ov_avg_r2 = float(coefs["r2_score"].dropna().mean())
 else:
@@ -222,7 +477,7 @@ else:
     _ov_avg_r2 = float(np.mean(_r2_vals)) if _r2_vals else 0.0
 _ov_coef_acc = max(0.0, 1.0 - _ov_mean_err)  # 1 - mean relative error
 _ov_scm_vals = [_ov_sign_pct / 100, _ov_avg_r2, _ov_coef_acc]
-_ov_disc_x  = ["Graph Precision", "Pre-DK Recall", "Post-DK Recall"]
+_ov_disc_x  = ["Post-DK Precision", "Pre-DK Recall", "Post-DK Recall"]
 _ov_scm_x   = ["Sign Consistency", "Avg Model R²", "Coeff Accuracy"]
 
 fig_ov = go.Figure()

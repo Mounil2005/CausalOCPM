@@ -69,12 +69,21 @@ def render_copilot():
             box-shadow: 0 0 0 4px rgba(124,58,237,0.15), 0 8px 24px rgba(0,0,0,0.06) !important;
             transform: translateY(-2px);
         }
-        /* BaseWeb's own textarea wrapper draws its own focus underline in
-           the app's theme primary color (green) independently of the outer
-           stChatInput div above — confirmed via computed style inspection,
-           not guessed. Overridden here so both rings agree. */
+        /* BaseWeb's own textarea wrapper draws its own border independently
+           of the outer stChatInput div above — confirmed via computed style
+           inspection, and matching its color to the outer pill (two earlier
+           fix attempts) still didn't fix it: the inner wrapper's own
+           getBoundingClientRect() showed it is a DIFFERENT SHAPE at a
+           different size than the outer pill — 8px square corners nested
+           inside the outer's 20px pill curve, and its right edge actually
+           overflows 5px past the outer container's right edge. Two nested
+           boxes of different shape/size will look like two boxes no matter
+           what color either border is. The only fix that holds regardless of
+           BaseWeb's internal geometry is to never let the inner wrapper draw
+           a visible border at all, in any state, and let the outer pill be
+           the only border/ring the user ever sees. */
         [data-testid="stChatInput"] [data-baseweb="textarea"] {
-            border-bottom-color: #7C3AED !important;
+            border-color: transparent !important;
         }
 
         /* 3. Base Chat Message Styling */

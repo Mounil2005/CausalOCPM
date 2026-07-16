@@ -93,9 +93,20 @@ else:
     _r_row2_imp  = 5.5   # triage automation alone
     _r_row3_imp  = 3.2   # bed expansion alone
 
-st.markdown(
-    f'<div style="max-width:900px;margin:0 auto;">'
-    # Report header
+# The whole report used to be built from many separate st.markdown() calls
+# bracketed by an opening '<div style="max-width:900px;margin:0 auto;">' here
+# and a closing '</div>' after Section 4. That never worked: each
+# st.markdown() call renders into its own independent DOM node in Streamlit,
+# so a div opened in one call cannot wrap content emitted by later calls —
+# the browser just auto-closes it at the end of that first node. The report
+# was rendering full-width instead of as a centered 900px "document" the
+# whole time. Fixed by collecting every section's HTML into one list and
+# passing it to a single st.markdown() call, so one real div actually wraps
+# all of it.
+_report_html = []
+
+# Report header
+_report_html.append(
     f'<div style="border-bottom:3px solid #1D4ED8;padding-bottom:20px;margin-bottom:32px;">'
     f'<div style="display:flex;justify-content:space-between;align-items:flex-end;">'
     f'<div>'
@@ -107,12 +118,11 @@ st.markdown(
     f'<div style="background:#DBEAFE;color:#1D4ED8;padding:8px 16px;border-radius:6px;font-weight:700;font-size:0.85rem;">CONFIDENTIAL</div>'
     f'</div>'
     f'</div>'
-    f'</div>',
-    unsafe_allow_html=True,
+    f'</div>'
 )
 
 # SECTION 1 — KEY FINDINGS
-st.markdown(
+_report_html.append(
     f'<div style="background:#F0FDF4;border-left:4px solid #10B981;border-radius:8px;padding:24px 28px;margin-bottom:24px;">'
     f'<h3 style="color:#064E3B;font-size:1.1rem;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;margin:0 0 16px;">01 · KEY FINDINGS</h3>'
     f'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;">'
@@ -133,8 +143,7 @@ st.markdown(
     f'<div style="color:#6B7280;font-size:0.8rem;">from {_r_baseline} → {_r_new_val} days · policy simulator scenario</div>'
     f'</div>'
     f'</div>'
-    f'</div>',
-    unsafe_allow_html=True,
+    f'</div>'
 )
 
 # SECTION 2 — CAUSAL CHAIN
@@ -144,7 +153,7 @@ _r_chain_html  = " → ".join(
     f'<b style="color:{_r_hop_colors[i % len(_r_hop_colors)]};">{hop}</b>'
     for i, hop in enumerate(_r_driver_hops)
 )
-st.markdown(
+_report_html.append(
     f'<div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:24px 28px;margin-bottom:24px;">'
     f'<h3 style="color:#1E293B;font-size:1.1rem;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;margin:0 0 12px;">02 · PRIMARY CAUSAL CHAIN</h3>'
     f'<div style="font-family:monospace;font-size:0.95rem;color:#334155;background:#F8FAFC;border-radius:6px;padding:16px 20px;line-height:2;">'
@@ -156,8 +165,7 @@ st.markdown(
     f'with F1 = {_r_f1:.3f} (Precision {_r_prec:.3f}, Recall {_r_rec:.3f}). '
     + (f'PC alone: F1 = {_r_f1_wodk:.3f} — domain knowledge integration contributed the remainder.' if _r_f1_wodk is not None else '')
     + f'</p>'
-    f'</div>',
-    unsafe_allow_html=True,
+    f'</div>'
 )
 
 # SECTION 3 — ACTION PLAN
@@ -180,7 +188,7 @@ _tbl += f'<tr><th style="{_th_r}">#</th><th style="{_th_r}">Action</th><th style
 for row in _action_rows:
     _tbl += f'<tr><td style="{_td_r};font-weight:800;color:#1D4ED8;">{row[0]}</td><td style="{_td_r};font-weight:600;">{row[1]}</td><td style="{_td_r};color:#059669;font-weight:700;">{row[2]}</td><td style="{_td_r}">{row[3]}</td><td style="{_td_r};color:#D97706;font-weight:700;">{row[4]}</td><td style="{_td_r}">{row[5]}</td></tr>'
 _tbl += '</table>'
-st.markdown(
+_report_html.append(
     f'<div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:24px 28px;margin-bottom:24px;">'
     f'<h3 style="color:#1E293B;font-size:1.1rem;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;margin:0 0 16px;">03 · RECOMMENDED ACTION PLAN</h3>'
     f'<p style="color:#64748B;font-size:0.9rem;margin:0 0 16px;">Ranked by expected impact — each action ties back to a specific edge in the causal chain above.</p>'
@@ -195,12 +203,11 @@ st.markdown(
     + (f'~300 annual shipments × $960 avg cost/delay-day (configurable domain parameters).' if domain == "manufacturing" else f'~400 annual cases × $1,050 avg cost/LOS-day (configurable domain parameters).')
     + f' Reduction % from policy simulator under the specified lever scenario.</span>'
     f'</div>'
-    f'</div>',
-    unsafe_allow_html=True,
+    f'</div>'
 )
 
 # SECTION 4 — METHODOLOGY & CONFIDENCE
-st.markdown(
+_report_html.append(
     f'<div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:24px 28px;margin-bottom:24px;">'
     f'<h3 style="color:#1E293B;font-size:1.1rem;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;margin:0 0 16px;">04 · METHODOLOGY & CONFIDENCE</h3>'
     f'<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">'
@@ -222,17 +229,19 @@ st.markdown(
     f'<div style="color:#64748B;font-size:0.9rem;">Sign-correct across {_sign_tot} estimated causal coefficients</div>'
     f'</div>'
     f'</div>'
-    f'</div>',
-    unsafe_allow_html=True,
+    f'</div>'
+)
+
+_report_html.append(
+    f'<div style="text-align:center;color:#94A3B8;font-size:0.8rem;margin-top:8px;border-top:1px solid #E2E8F0;padding-top:16px;">'
+    f'Generated by CausalOCPM · Causal Process Intelligence Framework · {_r_today}'
+    f'</div>'
 )
 
 st.markdown(
-    f'<div style="text-align:center;color:#94A3B8;font-size:0.8rem;margin-top:8px;border-top:1px solid #E2E8F0;padding-top:16px;">'
-    f'Generated by CausalOCPM · Causal Process Intelligence Framework · {_r_today}'
-    f'</div>',
+    '<div style="max-width:900px;margin:0 auto;">' + "".join(_report_html) + '</div>',
     unsafe_allow_html=True,
 )
-st.markdown('</div>', unsafe_allow_html=True)
 
 
 # ══════════════════════════════════════════════════════════════════════════════

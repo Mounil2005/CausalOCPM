@@ -6,6 +6,13 @@
     to { opacity: 1; transform: translateY(0); }
 }
 
+/* Base font-size bump (16px -> 18px, ~12%): nearly every font-size in this
+   app is declared in rem, so raising the root size scales all of them
+   proportionally in one place instead of hand-editing every hardcoded
+   value across every tab file. */
+html {
+    font-size: 18px !important;
+}
 html, body, [class*="css"] {
     font-family: 'Inter', -apple-system, sans-serif !important;
     color: #1E293B !important;
@@ -33,7 +40,41 @@ code, pre, .stCode {
 }
 .main .block-container {
     padding-top: 1.5rem !important;
-    max-width: 1440px;
+    width: 100% !important;
+    max-width: 1900px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+/* Side-by-side bordered cards (Mediator States / Business Impact,
+   Recommended Action Plan / Live Causal Graph, etc.) are only as tall as
+   their own content by default, so when one card has more text than its
+   neighbor the row ends with a ragged bottom edge instead of two flush
+   boxes. Stretch every bordered container to fill its column's row
+   height so paired cards always line up. */
+/* Streamlit nests a plain wrapper div and a second, inner
+   stVerticalBlockBorderWrapper (the one that actually draws the visible
+   card border) between the flex column and its content. Percentage
+   heights don't propagate through a chain unless every link in it is
+   sized explicitly, so without this the outer column stretches correctly
+   but the visible card inside it stays shrink-to-content, leaving a gap
+   of invisible empty space below the shorter card. Force flex:1 through
+   every layer of that chain so the actual border box is what stretches. */
+[data-testid="stHorizontalBlock"] { align-items: stretch !important; }
+[data-testid="stHorizontalBlock"] > [data-testid="column"] {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0 !important;
+}
+[data-testid="stHorizontalBlock"] > [data-testid="column"] > div,
+[data-testid="stVerticalBlockBorderWrapper"],
+[data-testid="stVerticalBlockBorderWrapper"] > div,
+[data-testid="stVerticalBlock"] {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 auto !important;
+    width: 100% !important;
+    min-height: 0 !important;
 }
 
 /* ── HIDE CHROME ─────────────────────────────────────────────────────────── */\r\n#MainMenu, footer, .stDeployButton { \r\n    display: none !important; \r\n}
