@@ -340,7 +340,7 @@ _lcol, _rcol = st.columns([1.1, 1.9])
 with _lcol:
     _sim_section_header("#EDE9FE", "🎛️", "Intervention Levers")
 
-    if st.button("🔄 Reset to Baseline", use_container_width=True, key="sim_reset_btn"):
+    if st.button("🔄 Reset to Baseline", width='stretch', key="sim_reset_btn"):
         st.session_state[_sim_key] = dict(_MFG_DEFAULTS if _is_mfg_sim else _HC_DEFAULTS)
         st.rerun()
 
@@ -564,7 +564,7 @@ with _rcol:
     ))
     _fig_wf.update_layout(**_wfl)
     with _sim_wf_container:
-        st.plotly_chart(_fig_wf, use_container_width=True, theme=None,
+        st.plotly_chart(_fig_wf, width='stretch', theme=None,
                         config={"displayModeBar": False})
 
     st.markdown("<div style='height:16px;'></div>", unsafe_allow_html=True)
@@ -730,7 +730,7 @@ with _botl:
             st.metric("Payback", "—" if _plan_res["annual_saving"] <= 0
                        else (f"{_plan_roi:.1f} mo" if _plan_roi < 60 else ">5 yr"))
 
-        if st.button("✅ Apply This Plan to Levers", use_container_width=True, key="sim_apply_plan_btn"):
+        if st.button("✅ Apply This Plan to Levers", width='stretch', key="sim_apply_plan_btn"):
             st.session_state[_sim_key] = dict(_plan_levers)
             st.rerun()
 
@@ -748,7 +748,7 @@ with _botl:
             yaxis={"title": f"{_sim_out_lbl} (days)", "gridcolor": BORDER},
         ))
         _plan_fig.update_layout(**_plan_fig_layout)
-        st.plotly_chart(_plan_fig, use_container_width=True, theme=None,
+        st.plotly_chart(_plan_fig, width='stretch', theme=None,
                         config={"displayModeBar": False})
 
 with _botr:
@@ -1045,7 +1045,7 @@ with _botr:
             f'Hover any node or edge for the driving lever(s) and predicted value change.</div>',
             unsafe_allow_html=True,
         )
-        st.plotly_chart(_fig_dag, use_container_width=True, theme=None,
+        st.plotly_chart(_fig_dag, width='stretch', theme=None,
                         config={"displayModeBar": False})
 
 # SECTION 4: Recovery Visualization (Horizontal Chart)
@@ -1084,7 +1084,7 @@ if not coefs.empty:
         ))
         fig_coef.update_layout(**_cl)
         try:
-            st.plotly_chart(fig_coef, use_container_width=True, theme=None, config={'displayModeBar': False})
+            st.plotly_chart(fig_coef, width='stretch', theme=None, config={'displayModeBar': False})
         except Exception as _e:
             st.error(f"Chart error: {_e}")
 
@@ -1225,7 +1225,7 @@ def _render_sensitivity_section(expanded=False):
             ))
             _fig_sens.update_layout(**_sens_layout)
             try:
-                st.plotly_chart(_fig_sens, use_container_width=True, theme=None,
+                st.plotly_chart(_fig_sens, width='stretch', theme=None,
                                 config={'displayModeBar': False})
             except Exception as _e:
                 st.error(f"Chart error: {_e}")
@@ -1329,7 +1329,7 @@ if not is_custom:
                        "title_font": dict(size=12)},
             ))
             _fig_cate.update_layout(**_cate_layout)
-            st.plotly_chart(_fig_cate, use_container_width=True, theme=None,
+            st.plotly_chart(_fig_cate, width='stretch', theme=None,
                             config={"displayModeBar": False})
 
             # Insight card

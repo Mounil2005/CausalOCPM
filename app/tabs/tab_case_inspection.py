@@ -68,11 +68,11 @@ _nav_prev, _nav_pick, _nav_next, _nav_risk = st.columns([0.6, 3.4, 0.6, 2.4])
 # button's click is created and checked before the selectbox line below,
 # even though ◀ and ▶ visually sit on either side of it.
 with _nav_prev:
-    _clicked_prev = st.button("◀", use_container_width=True, help="Previous case")
+    _clicked_prev = st.button("◀", width='stretch', help="Previous case")
 with _nav_next:
-    _clicked_next = st.button("▶", use_container_width=True, help="Next case")
+    _clicked_next = st.button("▶", width='stretch', help="Next case")
 with _nav_risk:
-    _clicked_risk = st.button("🎯 Jump to Highest-Risk Case", use_container_width=True, type="primary")
+    _clicked_risk = st.button("🎯 Jump to Highest-Risk Case", width='stretch', type="primary")
 
 if _clicked_prev:
     st.session_state["case_selector"] = _case_pool[(_cur_pos - 1) % len(_case_pool)]
@@ -242,7 +242,7 @@ if not expl.empty:
         ))
         fig_wf.update_layout(**_wfl)
         try:
-            st.plotly_chart(fig_wf, use_container_width=True, theme=None, config={'displayModeBar': False})
+            st.plotly_chart(fig_wf, width='stretch', theme=None, config={'displayModeBar': False})
         except Exception as _e:
             st.error(f"Chart error: {_e}")
         st.markdown(

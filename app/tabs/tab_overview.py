@@ -511,7 +511,7 @@ _ov_layout.update(dict(
 ))
 fig_ov.update_layout(**_ov_layout)
 try:
-    st.plotly_chart(fig_ov, use_container_width=True, theme=None, config={'displayModeBar': False})
+    st.plotly_chart(fig_ov, width='stretch', theme=None, config={'displayModeBar': False})
 except Exception as _ovE:
     st.error(f"Chart error: {_ovE}")
 

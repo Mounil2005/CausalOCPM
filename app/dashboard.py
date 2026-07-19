@@ -1002,7 +1002,7 @@ with st.sidebar:
         f'</div></div>',
         unsafe_allow_html=True,
     )
-    with st.popover("View Scenario Details →", use_container_width=True):
+    with st.popover("View Scenario Details →", width='stretch'):
         st.markdown(
             f"**Domain:** {domain.title()}\n\n"
             f"**Outcome variable:** {_sc_outcome}\n\n"

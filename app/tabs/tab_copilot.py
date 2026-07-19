@@ -447,14 +447,14 @@ def render_copilot():
         tool_cols = st.columns(6)
         for i, (label, question, key) in enumerate(tool_chips):
             with tool_cols[i]:
-                if st.button(label, key=f"tool_{key}_{i}", use_container_width=True):
+                if st.button(label, key=f"tool_{key}_{i}", width='stretch'):
                     set_question(question, key)
         with tool_cols[5]:
-            with st.popover("⊞ More Tools", use_container_width=True):
-                if st.button("💡 Best intervention?", key="more_intervention", use_container_width=True):
+            with st.popover("⊞ More Tools", width='stretch'):
+                if st.button("💡 Best intervention?", key="more_intervention", width='stretch'):
                     set_question("Best intervention?", "intervention")
                     st.rerun()
-                if st.button("💰 ROI opportunities?", key="more_roi", use_container_width=True):
+                if st.button("💰 ROI opportunities?", key="more_roi", width='stretch'):
                     set_question("What are the ROI opportunities?", "roi")
                     st.rerun()
             st.markdown('</div>', unsafe_allow_html=True)
@@ -480,7 +480,7 @@ def render_copilot():
         for i, (label, question, key) in enumerate(bottom_chips):
             with bc_cols[i]:
                 st.markdown('<div class="cop-bottom-chip">', unsafe_allow_html=True)
-                if st.button(label, key=f"bottom_{key}_{i}", use_container_width=True):
+                if st.button(label, key=f"bottom_{key}_{i}", width='stretch'):
                     st.session_state["copilot_pending_question"] = question
                     st.session_state["copilot_pending_chip_key"] = key
                     st.rerun()
@@ -508,7 +508,7 @@ def render_copilot():
                 for idx, fu in enumerate(msg["follow_ups"]):
                     with fu_cols[idx]:
                         st.markdown('<div class="saas-suggestion-btn saas-suggestion-btn--sm">', unsafe_allow_html=True)
-                        if st.button("↳ " + fu, key=f"fu_{idx}_{len(st.session_state['copilot_messages'])}", use_container_width=True):
+                        if st.button("↳ " + fu, key=f"fu_{idx}_{len(st.session_state['copilot_messages'])}", width='stretch'):
                             st.session_state["copilot_pending_question"] = fu
                             st.rerun()
                         st.markdown('</div>', unsafe_allow_html=True)

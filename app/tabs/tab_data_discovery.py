@@ -737,7 +737,7 @@ loop();
         )
         _sk.update_layout(**_sk_lay)
         try:
-            st.plotly_chart(_sk, use_container_width=True, theme=None, config={'displayModeBar': False})
+            st.plotly_chart(_sk, width='stretch', theme=None, config={'displayModeBar': False})
         except Exception as _e:
             st.warning(f"Sankey could not render: {_e}")
 
@@ -780,7 +780,7 @@ loop();
         )
         _sk.update_layout(**_sk_lay)
         try:
-            st.plotly_chart(_sk, use_container_width=True, theme=None, config={'displayModeBar': False})
+            st.plotly_chart(_sk, width='stretch', theme=None, config={'displayModeBar': False})
         except Exception as _e:
             st.warning(f"Sankey could not render: {_e}")
 
@@ -1686,7 +1686,7 @@ setTimeout(startAnim, 300);
             ))
             fig_abl.update_layout(**_abl_layout)
             try:
-                st.plotly_chart(fig_abl, use_container_width=True, theme=None, config={'displayModeBar': False})
+                st.plotly_chart(fig_abl, width='stretch', theme=None, config={'displayModeBar': False})
             except Exception as _ablE:
                 st.error(f"Chart error: {_ablE}")
 
